@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 )
 
 func validateChirpHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +27,11 @@ func validateChirpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type returnVal struct {
-		Valid bool `json:"valid"`
+		Valid       bool   `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
-	respondWithJSON(w, 200, returnVal{Valid: true})
+
+	re := regexp.MustCompile(`\b(?i)(kerfuffle|sharbert|fornax)\b`)
+
+	respondWithJSON(w, 200, returnVal{Valid: true, CleanedBody: re.ReplaceAllString(params.Body, "****")})
 }
