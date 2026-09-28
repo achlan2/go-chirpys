@@ -18,6 +18,28 @@ type response struct {
 	UserID    uuid.UUID `json:"user_id"`
 }
 
+func (cfg *apiConfig) handlerGetChirp(w http.ResponseWriter, r *http.Request) {
+	chirpId := r.PathValue("id")
+
+	id, parseErr := uuid.Parse(chirpId)
+	if parseErr != nil {
+		respondWithError(w, http.StatusInternalServerError, "failed to parse uuid", parseErr)
+		return
+	}
+	chirp, err := cfg.db.GetChirp(r.Context(), id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Not Found", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, response{
+		ID:        chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body:      chirp.Body,
+		UserID:    chirp.UserID,
+	})
+}
 func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 
 	chirps, err := cfg.db.GetAllChirps(r.Context())
@@ -41,8 +63,8 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Body   string `json:"body"`
-		UserID string `json:"user_id"`
+		Body   string    `json:"body"`
+		UserID uuid.UUID `json:"user_id"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -65,15 +87,9 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 
 	re := regexp.MustCompile(`\b(?i)(kerfuffle|sharbert|fornax)\b`)
 
-	userID, parseErr := uuid.Parse(params.UserID)
-	if parseErr != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to parse uuid", parseErr)
-		return
-	}
-
 	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
 		Body:   re.ReplaceAllString(params.Body, "****"),
-		UserID: userID,
+		UserID: params.UserID,
 	})
 
 	if err != nil {
