@@ -55,7 +55,7 @@ func main() {
 			http.StripPrefix("/app", http.FileServer(http.Dir(".")))))
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
-	mux.HandleFunc("POST /api/validate_chirp", validateChirpHandler)
+	mux.HandleFunc("POST /api/chirps", apiConfig.handlerCreateChirp)
 	mux.HandleFunc("POST /api/users", apiConfig.handlerPostUser)
 	mux.HandleFunc("GET /admin/metrics", apiConfig.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiConfig.handlerReset)
