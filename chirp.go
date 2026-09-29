@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/achlan2/go-chirpy/internal/auth"
 	"github.com/achlan2/go-chirpy/internal/database"
 	"github.com/google/uuid"
 )
@@ -63,8 +64,18 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Body   string    `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
+		Body string `json:"body"`
+	}
+	token, errBearer := auth.GetBearerToken(r.Header)
+	if errBearer != nil {
+		respondWithError(w, http.StatusUnauthorized, "Bearer Unauthorized!", nil)
+		return
+	}
+
+	userId, errJWT := auth.ValidateJWT(token, cfg.secret)
+	if userId == uuid.Nil && errJWT != nil {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized!", nil)
+		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -89,7 +100,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 
 	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
 		Body:   re.ReplaceAllString(params.Body, "****"),
-		UserID: params.UserID,
+		UserID: userId,
 	})
 
 	if err != nil {
