@@ -4,7 +4,8 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL,
   email TEXT NOT NULL UNIQUE,
-  hashed_password TEXT NOT NULL
+  hashed_password TEXT NOT NULL,
+  is_chirpy_red BOOL
 );
 -- +goose Down
 DROP TABLE users;

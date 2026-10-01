@@ -72,6 +72,7 @@ func main() {
 	mux.HandleFunc("PUT /api/users", apiConfig.handlerUpdateUser)
 	mux.HandleFunc("GET /admin/metrics", apiConfig.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiConfig.handlerReset)
+	mux.HandleFunc("POST /api/polka/webhooks", apiConfig.handlerUpgradeUser)
 
 	server := &http.Server{
 		Addr:    ":" + port,
