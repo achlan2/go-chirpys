@@ -38,6 +38,17 @@ func (cfg *apiConfig) handlerUpgradeUser(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
+	apiKey, errApiKey := auth.GetAPIKey(r.Header)
+
+	if errApiKey != nil {
+		respondWithError(w, http.StatusUnauthorized, "Can't get api key", errApiKey)
+		return
+	}
+
+	if apiKey != cfg.polkaKey {
+		respondWithError(w, http.StatusUnauthorized, "Wrong API Key", errApiKey)
+		return
+	}
 
 	_, errUp := cfg.db.UpgradeUser(r.Context(), params.Data.UserID)
 	fmt.Println(errUp)
