@@ -12,13 +12,15 @@ RETURNING *;
 -- name: GetAllChirps :many
 SELECT * 
 FROM chirps
-ORDER BY created_at;
+ORDER BY CASE WHEN sqlc.arg('direction')::text = 'asc' THEN created_at END ASC,
+  CASE WHEN sqlc.arg('direction')::text = 'desc' THEN created_at END DESC;
 
 -- name: GetAllChirpsByAuthor :many
 SELECT * 
 FROM chirps
 WHERE user_id=$1
-ORDER BY created_at;
+ORDER BY CASE WHEN sqlc.arg('direction')::text = 'asc' THEN created_at END ASC,
+  CASE WHEN sqlc.arg('direction')::text = 'desc' THEN created_at END DESC;
 
 -- name: GetChirp :one
 SELECT * 
